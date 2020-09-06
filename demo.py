@@ -93,6 +93,10 @@ def detect(net, img_path, thresh, save_crops):
 
             cv2.rectangle(img, left_up, right_bottom, (0, 0, 255), 2)
 
+            # save cropped face images as 0-imagename, 1-imagename, etc.
+            face = img[pt[1]:pt[3], pt[0]:pt[2]]
+            cv2.imwrite(j + '-' + image_filename, face)
+
             conf = "{:.2f}".format(score)
             text_size, baseline = cv2.getTextSize(
                 conf, cv2.FONT_HERSHEY_SIMPLEX, 0.3, 1)
