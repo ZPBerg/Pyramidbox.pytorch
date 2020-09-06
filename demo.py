@@ -22,6 +22,8 @@ from pyramidbox import build_net
 from utils.augmentations import to_chw_bgr
 
 parser = argparse.ArgumentParser(description='pyramidbox demo')
+parser.add_argument('--img_path', default='./img',
+                    help='Directory of images to demo')
 parser.add_argument('--save_dir',
                     type=str, default='tmp/',
                     help='Directory for detect result')
@@ -32,7 +34,7 @@ parser.add_argument('--thresh',
                     default=0.4, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--save_cropped_faces', default=False,
-			action='store_true')
+		    action='store_true')
 args = parser.parse_args()
 
 
@@ -115,8 +117,7 @@ if __name__ == '__main__':
         net.cuda()
         cudnn.benckmark = True
 
-    img_path = './img'
-    img_list = [os.path.join(img_path, x)
-                for x in os.listdir(img_path) if x.endswith('jpg')]
+    img_list = [os.path.join(args.img_path, x)
+                for x in os.listdir(args.img_path) if x.endswith('jpg')]
     for path in img_list:
         detect(net, path, args.thresh, args.save_cropped_faces)
