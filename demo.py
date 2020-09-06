@@ -83,12 +83,13 @@ def detect(net, img_path, thresh, save_crops):
             pt = (detections[0, i, j, 1:] * scale).cpu().numpy().astype(int)
             left_up, right_bottom = (pt[0], pt[1]), (pt[2], pt[3])
             j += 1
-            cv2.rectangle(img, left_up, right_bottom, (0, 0, 255), 2)
 
             if save_crops:
                 # save cropped face images as 0-imagename, 1-imagename, etc.
                 face = img[pt[1]:pt[3], pt[0]:pt[2]]
-                cv2.imwrite(os.path.join(args.save_dir, '{}-'.format(j) + os.path.basename(img_path)), face)
+                cv2.imwrite(os.path.join(args.save_dir, '{}-'.format(j) + os.path.basename(img_path)), cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+
+            cv2.rectangle(img, left_up, right_bottom, (0, 0, 255), 2)
 
             conf = "{:.2f}".format(score)
             text_size, baseline = cv2.getTextSize(
@@ -102,7 +103,7 @@ def detect(net, img_path, thresh, save_crops):
     t2 = time.time()
     print('detect:{} timer:{}'.format(img_path, t2 - t1))
 
-    cv2.imwrite(image_filename, img)
+    cv2.imwrite(image_filename, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 
 if __name__ == '__main__':
