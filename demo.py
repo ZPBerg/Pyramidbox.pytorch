@@ -31,6 +31,8 @@ parser.add_argument('--model',
 parser.add_argument('--thresh',
                     default=0.4, type=float,
                     help='Final confidence threshold')
+parser.add_argument('--save_cropped_faces', default=False,
+			action='store_true')
 args = parser.parse_args()
 
 
@@ -45,11 +47,12 @@ else:
     torch.set_default_tensor_type('torch.FloatTensor')
 
 
-def detect(net, img_path, thresh):
+def detect(net, img_path, thresh, save_crops):
     img = Image.open(img_path)
-    if img.mode == 'L':
-        img = img.convert('RGB')
-
+    #orig_img = img
+    #if img.mode == 'L':
+     #   img = img.convert('RGB')
+    #orig_img = np.array(orig_img)
     img = np.array(img)
     height, width, _ = img.shape
     max_im_shrink = np.sqrt(
@@ -74,12 +77,19 @@ def detect(net, img_path, thresh):
 
     for i in range(detections.size(1)):
         j = 0
+        image_filename = os.path.join(args.save_dir, os.path.basename(img_path))
         while detections[0, i, j, 0] >= thresh:
             score = detections[0, i, j, 0]
             pt = (detections[0, i, j, 1:] * scale).cpu().numpy().astype(int)
             left_up, right_bottom = (pt[0], pt[1]), (pt[2], pt[3])
             j += 1
             cv2.rectangle(img, left_up, right_bottom, (0, 0, 255), 2)
+
+            if save_crops:
+                # save cropped face images as 0-imagename, 1-imagename, etc.
+                face = img[pt[1]:pt[3], pt[0]:pt[2]]
+                cv2.imwrite(os.path.join(args.save_dir, '{}-'.format(j) + os.path.basename(img_path)), face)
+
             conf = "{:.2f}".format(score)
             text_size, baseline = cv2.getTextSize(
                 conf, cv2.FONT_HERSHEY_SIMPLEX, 0.3, 1)
@@ -92,7 +102,7 @@ def detect(net, img_path, thresh):
     t2 = time.time()
     print('detect:{} timer:{}'.format(img_path, t2 - t1))
 
-    cv2.imwrite(os.path.join(args.save_dir, os.path.basename(img_path)), img)
+    cv2.imwrite(image_filename, img)
 
 
 if __name__ == '__main__':
@@ -108,4 +118,4 @@ if __name__ == '__main__':
     img_list = [os.path.join(img_path, x)
                 for x in os.listdir(img_path) if x.endswith('jpg')]
     for path in img_list:
-        detect(net, path, args.thresh)
+        detect(net, path, args.thresh, args.save_cropped_faces)
