@@ -87,8 +87,15 @@ def detect(net, img_path, thresh, save_crops):
             j += 1
 
             if save_crops:
+                # increase bbox by 10% on all sides
+                face_width = pt[3] - pt[1]
+                ten_percent_width = int(0.1 * face_width)
+                face_height = pt[2] - pt[0]
+                ten_percent_height = int(0.1 * face_height)
+
                 # save cropped face images as face0-imagename, face1-imagename, etc.
-                face = img[pt[1]:pt[3], pt[0]:pt[2]]
+                face = img[pt[1] - ten_percent_width:pt[3] + ten_percent_width, 
+                           pt[0] - ten_percent_height:pt[2] + ten_percent_height]
                 cv2.imwrite(os.path.join(args.save_dir, 'face{}-'.format(j) + os.path.basename(img_path)), cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
 
             cv2.rectangle(img, left_up, right_bottom, (0, 0, 255), 2)
